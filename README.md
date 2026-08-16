@@ -78,7 +78,7 @@ You need Docker, Python 3.13, `uv`, pnpm 10, and Node 24. The `.node-version` fi
    pnpm dev
    ```
 
-6. Open `http://127.0.0.1:5173`.
+6. Open the React Dashboard.
 
 Create a topic, choose a precise question, and press **Run research**. The first result is always a draft. Press **Verify draft** to run the independent evidence checks.
 
