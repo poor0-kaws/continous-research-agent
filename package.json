@@ -1,0 +1,23 @@
+{
+  "name": "continuous-research-agent",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "setup": "uv sync --project backend --all-groups && pnpm install",
+    "dev:db": "docker compose up -d db",
+    "dev": "concurrently -k -n api,worker,web -c blue,magenta,green \"uv run --project backend uvicorn research_agent.main:app --reload --port 8000\" \"uv run --project backend python -m research_agent.worker\" \"pnpm --dir frontend dev\"",
+    "test": "pnpm test:backend && pnpm test:frontend",
+    "test:backend": "uv run --project backend pytest",
+    "test:frontend": "pnpm --dir frontend test --run",
+    "test:e2e": "pnpm --dir frontend test:e2e",
+    "lint": "uv run --project backend ruff check backend && pnpm --dir frontend lint",
+    "typecheck": "uv run --project backend mypy backend/src && pnpm --dir frontend typecheck",
+    "db:migrate": "uv run --project backend alembic -c backend/alembic.ini upgrade head"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
