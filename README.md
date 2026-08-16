@@ -2,8 +2,6 @@
 
 ContResAI is a continuous research workspace. You give it a question. It searches a reviewed set of websites, writes a research draft, checks every factual claim, and then builds a connected knowledge graph from the claims that passed.
 
-The important rule is simple: **the browser agent cannot write trusted knowledge**. Browser text is treated like a note handed in by a stranger. A separate verifier must find the same words in an approved, freely accessible source before a claim is trusted.
-
 ## How information moves
 
 ```text
