@@ -66,7 +66,7 @@ def test_custom_source_rejects_local_hosts(hostname: str) -> None:
 
 def test_domain_batches_are_small_and_grouped() -> None:
     sources = load_catalog_file(CATALOG)[:30]
-    batches = group_domain_batches(sources, batch_size=7)
+    batches = group_domain_batches(sources)
 
     assert batches
-    assert all(len(batch) <= 7 for batch in batches)
+    assert all(len(batch) <= 6 for batch in batches)

@@ -96,9 +96,9 @@ class GroqClient:
         reports: list[str] = []
         results_by_url: dict[str, GroqSearchResult] = {}
         searched_domains: list[str] = []
+        last_oversized_error: httpx.HTTPStatusError | None = None
 
         for domains in domain_batches[:6]:
-            searched_domains.extend(domains)
             payload = {
                 "model": "groq/compound",
                 "messages": [
@@ -123,7 +123,35 @@ class GroqClient:
                 "search_settings": {"include_domains": domains},
                 "compound_custom": {"tools": {"enabled_tools": ["web_search"]}},
             }
-            data = self._post(session, "groq/compound", payload, estimated_tokens=3_000)
+            try:
+                data = self._post(session, "groq/compound", payload, estimated_tokens=3_000)
+            except QuotaExhausted:
+                if not reports:
+                    raise
+                session.add(
+                    AuditEvent(
+                        event_type="research_stopped_at_quota",
+                        message="Completed research batches were kept when Compound reached quota",
+                        details={"completed_domains": searched_domains},
+                    )
+                )
+                session.commit()
+                break
+            except httpx.HTTPStatusError as error:
+                if error.response.status_code != 413:
+                    raise
+                last_oversized_error = error
+                session.add(
+                    AuditEvent(
+                        event_type="research_batch_skipped",
+                        message="An oversized Compound batch was skipped without losing prior work",
+                        details={"domains": domains, "status_code": 413},
+                    )
+                )
+                session.commit()
+                continue
+
+            searched_domains.extend(domains)
             message = data["choices"][0]["message"]
             reports.append(str(message.get("content", "")))
             for tool in message.get("executed_tools", []):
@@ -134,6 +162,11 @@ class GroqClient:
                     except ValueError:
                         continue
                     results_by_url[str(result.url)] = result
+
+        if not reports and last_oversized_error is not None:
+            raise ModelResponseError(
+                "Every Groq research batch was too large; use a narrower topic or fewer sources"
+            ) from last_oversized_error
 
         return BrowserResearchResult(
             report_text="\n\n---\n\n".join(reports),

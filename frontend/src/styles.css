@@ -66,7 +66,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .run-button { display: flex; align-items: center; gap: 7px; padding: 10px 14px; border: 0; border-radius: 9px; color: white; background: var(--green); font-size: 11px; font-weight: 750; cursor: pointer; }
 .run-button:disabled { cursor: not-allowed; opacity: .55; }
 .spin { animation: spin 1.5s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
-.error-banner { display: flex; align-items: center; gap: 8px; margin: 12px 28px 0; padding: 10px 12px; border: 1px solid #d8aaa2; border-radius: 8px; color: var(--red); background: var(--red-soft); font-size: 11px; }
+.run-notice { display: flex; align-items: flex-start; gap: 9px; margin: 12px 28px 0; padding: 11px 12px; border: 1px solid; border-radius: 8px; font-size: 11px; line-height: 1.45; }
+.run-notice svg { flex: 0 0 auto; margin-top: 1px; }
+.run-notice span { display: grid; gap: 2px; }
+.run-notice strong { font-size: 11px; }
+.run-notice--error { border-color: #d8aaa2; color: var(--red); background: var(--red-soft); }
+.run-notice--quota { border-color: #d9c18f; color: #6f5519; background: #fff8e8; }
 .graph-stage { position: relative; min-height: 0; }
 .graph-stage > .react-flow, .empty-graph { height: 100%; min-height: 540px; }
 .graph-legend { position: absolute; z-index: 5; top: 14px; left: 18px; display: flex; gap: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 253, 248, .9); color: var(--muted); font-size: 9px; }

@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock3, Play, RefreshCw, ShieldAlert } from "lucide-react";
+import { Clock3, Play, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { InsightPanel } from "./components/InsightPanel";
 import { KnowledgeGraph } from "./components/KnowledgeGraph";
+import { RunStatusNotice } from "./components/RunStatusNotice";
 import { SourceCatalogDrawer } from "./components/SourceCatalogDrawer";
 import { TopicSidebar } from "./components/TopicSidebar";
 
@@ -50,7 +51,8 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (runQuery.data?.status !== "completed") return;
+    const status = runQuery.data?.status;
+    if (!status || !["completed", "failed", "paused_quota"].includes(status)) return;
     queryClient.invalidateQueries({ queryKey: ["drafts", selectedId] });
     queryClient.invalidateQueries({ queryKey: ["graph", selectedId] });
     queryClient.invalidateQueries({ queryKey: ["insights", selectedId] });
@@ -115,9 +117,7 @@ export default function App() {
           </div>
         </header>
 
-        {runQuery.data?.status === "failed" && (
-          <div className="error-banner"><ShieldAlert size={17} /> Research stopped safely: {runQuery.data.error_message}</div>
-        )}
+        <RunStatusNotice run={runQuery.data} />
 
         <section className="graph-stage" aria-label="Topic knowledge graph">
           <div className="graph-legend">
