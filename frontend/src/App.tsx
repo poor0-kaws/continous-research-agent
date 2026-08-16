@@ -35,6 +35,15 @@ export default function App() {
     queryFn: () => api.listInsights(selectedId!),
     enabled: Boolean(selectedId),
   });
+  const runsQuery = useQuery({
+    queryKey: ["runs", selectedId],
+    queryFn: () => api.listRuns(selectedId!),
+    enabled: Boolean(selectedId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.[0]?.status;
+      return status === "queued" || status === "running" ? 2_000 : false;
+    },
+  });
   const runQuery = useQuery({
     queryKey: ["run", activeRunId],
     queryFn: () => api.getRun(activeRunId!),
@@ -49,14 +58,17 @@ export default function App() {
     queryFn: api.listSources,
     enabled: showSources,
   });
+  const watchedRun =
+    runQuery.data?.topic_id === selectedId ? runQuery.data : runsQuery.data?.[0];
 
   useEffect(() => {
-    const status = runQuery.data?.status;
+    const status = watchedRun?.status;
     if (!status || !["completed", "failed", "paused_quota"].includes(status)) return;
+    queryClient.invalidateQueries({ queryKey: ["runs", selectedId] });
     queryClient.invalidateQueries({ queryKey: ["drafts", selectedId] });
     queryClient.invalidateQueries({ queryKey: ["graph", selectedId] });
     queryClient.invalidateQueries({ queryKey: ["insights", selectedId] });
-  }, [queryClient, runQuery.data?.status, selectedId]);
+  }, [queryClient, watchedRun?.status, selectedId]);
 
   const createTopic = useMutation({
     mutationFn: api.createTopic,
@@ -67,7 +79,10 @@ export default function App() {
   });
   const startRun = useMutation({
     mutationFn: (topicId: string) => api.startRun(topicId),
-    onSuccess: (run) => setActiveRunId(run.id),
+    onSuccess: (run) => {
+      setActiveRunId(run.id);
+      queryClient.invalidateQueries({ queryKey: ["runs", run.topic_id] });
+    },
   });
   const verifyDraft = useMutation({
     mutationFn: api.verifyDraft,
@@ -82,7 +97,7 @@ export default function App() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sources"] }),
   });
 
-  const runIsActive = runQuery.data?.status === "queued" || runQuery.data?.status === "running";
+  const runIsActive = watchedRun?.status === "queued" || watchedRun?.status === "running";
 
   return (
     <div className="app-shell">
@@ -112,12 +127,12 @@ export default function App() {
               onClick={() => selectedId && startRun.mutate(selectedId)}
             >
               {runIsActive ? <RefreshCw className="spin" size={16} /> : <Play size={16} />}
-              {runIsActive ? runQuery.data?.progress_stage.replaceAll("_", " ") : "Run research"}
+              {runIsActive ? watchedRun?.progress_stage.replaceAll("_", " ") : "Run research"}
             </button>
           </div>
         </header>
 
-        <RunStatusNotice run={runQuery.data} />
+        <RunStatusNotice run={watchedRun} />
 
         <section className="graph-stage" aria-label="Topic knowledge graph">
           <div className="graph-legend">

@@ -109,6 +109,22 @@ def start_research_run(topic_id: str, session: Session = Depends(get_session)) -
     return run
 
 
+@router.get("/topics/{topic_id}/runs", response_model=list[ResearchRunRead])
+def list_topic_runs(
+    topic_id: str,
+    limit: int = Query(default=20, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> list[ResearchRun]:
+    get_or_404(session, Topic, topic_id)
+    statement = (
+        select(ResearchRun)
+        .where(ResearchRun.topic_id == topic_id)
+        .order_by(ResearchRun.created_at.desc())
+        .limit(limit)
+    )
+    return list(session.scalars(statement))
+
+
 @router.get("/runs/{run_id}", response_model=ResearchRunRead)
 def get_run(run_id: str, session: Session = Depends(get_session)) -> ResearchRun:
     return get_or_404(session, ResearchRun, run_id)
