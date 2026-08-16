@@ -56,6 +56,7 @@ def test_browser_agent_receives_only_web_search_and_exact_domains(session) -> No
 
     assert captured["search_settings"] == {"include_domains": ["www.nature.com"]}
     assert captured["compound_custom"] == {"tools": {"enabled_tools": ["web_search"]}}
+    assert "citation_options" not in captured
     assert "tools" not in captured or captured["compound_custom"]["tools"]["enabled_tools"] == [
         "web_search"
     ]

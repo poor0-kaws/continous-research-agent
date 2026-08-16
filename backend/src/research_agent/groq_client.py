@@ -122,7 +122,6 @@ class GroqClient:
                 ],
                 "search_settings": {"include_domains": domains},
                 "compound_custom": {"tools": {"enabled_tools": ["web_search"]}},
-                "citation_options": "enabled",
             }
             data = self._post(session, "groq/compound", payload, estimated_tokens=3_000)
             message = data["choices"][0]["message"]
