@@ -27,4 +27,7 @@ def test_topic_and_run_flow(session) -> None:  # type: ignore[no-untyped-def]
 
     assert first_run.status_code == 202
     assert second_run.json()["id"] == first_run.json()["id"]
+    listed_runs = client.get(f"/api/topics/{topic['id']}/runs")
+    assert listed_runs.status_code == 200
+    assert listed_runs.json()[0]["id"] == first_run.json()["id"]
     app.dependency_overrides.clear()

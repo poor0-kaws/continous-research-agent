@@ -27,6 +27,7 @@ export const api = {
     request<Topic>("/topics", { method: "POST", body: JSON.stringify(payload) }),
   startRun: (topicId: string) =>
     request<ResearchRun>(`/topics/${topicId}/runs`, { method: "POST" }),
+  listRuns: (topicId: string) => request<ResearchRun[]>(`/topics/${topicId}/runs`),
   getRun: (runId: string) => request<ResearchRun>(`/runs/${runId}`),
   listDrafts: (topicId: string) =>
     request<ResearchDraft[]>(`/topics/${topicId}/research-drafts`),

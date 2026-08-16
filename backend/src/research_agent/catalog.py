@@ -67,7 +67,7 @@ def choose_relevant_sources(
 
 
 def group_domain_batches(
-    sources: Iterable[SourceCatalogEntry], batch_size: int = 12
+    sources: Iterable[SourceCatalogEntry], batch_size: int = 6
 ) -> list[list[str]]:
     by_category: dict[str, list[str]] = {}
     for source in sources:

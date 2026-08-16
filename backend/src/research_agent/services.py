@@ -153,6 +153,7 @@ class ResearchPipeline:
         )
         session.add(draft)
         session.flush()
+        run.draft_id = draft.id
 
         for item, source in valid_results:
             self._save_lead(
@@ -234,7 +235,6 @@ class ResearchPipeline:
             run_id=run.id,
             details={"draft_id": draft.id, "candidate_claims": len(claims)},
         )
-        run.draft_id = draft.id
         run.documents_processed = len(valid_results)
         return draft
 
